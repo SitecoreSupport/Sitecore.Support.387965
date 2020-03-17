@@ -44,9 +44,11 @@
   <ItemGroup>
     <Reference Include="Sitecore.ExperienceForms">
       <HintPath>..\..\..\..\..\inetpub\wwwroot\sc902exportcsv\sc902exportcsv.local\bin\Sitecore.ExperienceForms.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Sitecore.ExperienceForms.Data.SqlServer">
       <HintPath>..\..\..\..\..\inetpub\wwwroot\sc902exportcsv\sc902exportcsv.local\bin\Sitecore.ExperienceForms.Data.SqlServer.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Sitecore.Kernel">
       <HintPath>..\packages\SC.Sitecore.Kernel.9.0.2\lib\Sitecore.Kernel.dll</HintPath>
