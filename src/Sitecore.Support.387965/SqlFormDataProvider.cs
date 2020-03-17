@@ -5,9 +5,11 @@ using System.Linq;
 using Sitecore.Configuration;
 using Sitecore.Data.DataProviders.Sql;
 using Sitecore.Diagnostics;
+using Sitecore.ExperienceForms.Data;
 using Sitecore.ExperienceForms.Data.Entities;
+using Sitecore.ExperienceForms.Data.SqlServer;
 
-namespace Sitecore.ExperienceForms.Data.SqlServer
+namespace Sitecore.Support.ExperienceForms.Data.SqlServer
 {
     public class SqlFormDataProvider : IFormDataProvider
     {
@@ -21,44 +23,33 @@ namespace Sitecore.ExperienceForms.Data.SqlServer
 
         public IReadOnlyCollection<FormEntry> GetEntries(Guid formId, DateTime? startDate, DateTime? endDate)
         {
-            var start = startDate ?? DateTime.MinValue;
-            var end = endDate ?? DateTime.MaxValue;
-            var sqlForm = "SELECT {0}ID{1}" +
-                ",{0}FormItemID{1}" +
-                ",{0}Created{1}" +
-                " FROM {0}FormEntry{1}" +
-                " WHERE {0}FormItemID{1}={2}formItemId{3}" +
-                " AND {0}Created{1} BETWEEN {2}start{3} AND {2}end{3}";
+            DateTime? nullable = startDate;
+            DateTime dateTime = (nullable.HasValue ? nullable.GetValueOrDefault() : DateTime.MinValue);
+            nullable = endDate;
+            DateTime dateTime1 = (nullable.HasValue ? nullable.GetValueOrDefault() : DateTime.MaxValue);
+            string str = "SELECT {0}ID{1},{0}FormItemID{1},{0}Created{1} FROM {0}FormEntry{1} WHERE {0}FormItemID{1}={2}formItemId{3} AND {0}Created{1} BETWEEN {2}start{3} AND {2}end{3}";
+            List<FormEntry> formEntries = new List<FormEntry>(this.SqlDataApi.CreateObjectReader<FormEntry>(str, new object[] { "formItemId", formId, "start", dateTime, "end", dateTime1 }, new Func<IDataReader, FormEntry>(SqlFormDataProvider.ParseFormEntry)));
+            if (formEntries.Count == 0)
 
-            var entries = new List<FormEntry>(SqlDataApi.CreateObjectReader(sqlForm, new object[]
             {
-                "formItemId",
-                formId,
-                "start",
-                start,
-                "end",
-                end
-            }, ParseFormEntry));
-
-            var sqlFields = "SELECT {0}ID{1}" +
-                ",{0}FormEntryID{1}" +
-                ",{0}FieldItemID{1}" +
-                ",{0}FieldName{1}" +
-                ",{0}Value{1}" +
-                ",{0}ValueType{1}" +
-                " FROM {0}FieldData{1}" +
-                " WHERE {0}FormEntryID{1}={2}formEntryId{3}";
-
-            foreach (var formEntry in entries)
-            {
-                formEntry.Fields = new List<FieldData>(SqlDataApi.CreateObjectReader(sqlFields, new object[]
-                {
-                    "formEntryId",
-                    formEntry.FormEntryId
-                }, ParseFieldEntry));
+                return formEntries;
             }
-
-            return entries;
+            string str1 = "SELECT {0}ID{1},{0}FormEntryID{1},{0}FieldItemID{1},{0}FieldName{1},{0}Value{1},{0}ValueType{1} FROM {0}FieldData{1} WHERE {0}FormEntryID{1} IN (SELECT {0}ID{1} FROM {0}FormEntry{1} WHERE {0}FormItemID{1}={2}formItemId{3} AND {0}Created{1} BETWEEN {2}start{3} AND {2}end{3})";
+            IEnumerable<FieldData> fieldDatas = this.SqlDataApi.CreateObjectReader<FieldData>(str1, new object[] { "formItemId", formId, "start", dateTime, "end", dateTime1 }, new Func<IDataReader, FieldData>(SqlFormDataProvider.ParseFieldEntry));
+            foreach (FieldData fieldDatum in fieldDatas)
+            {
+                FormEntry formEntry = formEntries.FirstOrDefault<FormEntry>((FormEntry ent) => ent.FormEntryId == fieldDatum.FormEntryId);
+                if (formEntry == null)
+                {
+                    continue;
+                }
+                if (formEntry.Fields == null)
+                {
+                    formEntry.Fields = new List<FieldData>();
+                }
+                formEntry.Fields.Add(fieldDatum);
+            }
+            return formEntries;
         }
 
         public void CreateEntry(FormEntry entry)
