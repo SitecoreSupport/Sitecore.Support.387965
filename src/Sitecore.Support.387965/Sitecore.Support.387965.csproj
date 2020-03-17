@@ -42,12 +42,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Sitecore.ExperienceForms">
-      <HintPath>..\..\..\..\..\inetpub\wwwroot\sc902exportcsv\sc902exportcsv.local\bin\Sitecore.ExperienceForms.dll</HintPath>
+    <Reference Include="Sitecore.ExperienceForms, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SC.Sitecore.ExperienceForms.9.0.2\lib\Sitecore.ExperienceForms.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Sitecore.ExperienceForms.Data.SqlServer">
-      <HintPath>..\..\..\..\..\inetpub\wwwroot\sc902exportcsv\sc902exportcsv.local\bin\Sitecore.ExperienceForms.Data.SqlServer.dll</HintPath>
+    <Reference Include="Sitecore.ExperienceForms.Data.SqlServer, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SC.Sitecore.ExperienceForms.Data.SqlServer.9.0.2\lib\Sitecore.ExperienceForms.Data.SqlServer.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Sitecore.Kernel">
